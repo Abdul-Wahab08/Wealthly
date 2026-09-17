@@ -7,7 +7,7 @@ const _layout = () => {
 
     if (!isLoaded) return null;
 
-    if (isSignedIn) <Redirect href="/" />
+    if (isSignedIn) <Redirect href="/(root)/(tabs)" />
 
     return (
         <Stack screenOptions={{ headerShown: false }} />
