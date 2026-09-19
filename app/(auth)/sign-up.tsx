@@ -1,11 +1,11 @@
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { Controller, useForm } from "react-hook-form"
-import { SignUpFormData, signUpSchema } from '@/lib/auth'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useAuth, useSignUp } from '@clerk/expo'
-import { useState } from 'react'
 import CodeVerification from '@/components/CodeVerification'
+import { SignUpFormData, signUpSchema } from '@/lib/schemas/auth'
+import { useAuth, useSignUp } from '@clerk/expo'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { Link } from 'expo-router'
+import { useState } from 'react'
+import { Controller, useForm } from "react-hook-form"
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 const signUp = () => {

@@ -3,7 +3,6 @@ import { useUser } from "@clerk/expo";
 import { useEffect } from "react";
 import { userStore } from "../store/userStore";
 
-
 export function useUserSync() {
     const { user } = useUser();
     const setCurrency = userStore((state) => state.setCurrency);
@@ -51,7 +50,6 @@ export function useUserSync() {
                     .single();
 
                 if (upsertError) {
-                    console.error("Error upserting user ", upsertError);
                     setNeedsOnboarding(true);
                     return;
                 }
@@ -74,6 +72,7 @@ export function useUserSync() {
                 }
             } catch (error) {
                 console.error("Error syncing user ", error);
+                setNeedsOnboarding(true);
             }
         }
 

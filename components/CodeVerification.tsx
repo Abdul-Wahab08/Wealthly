@@ -1,9 +1,9 @@
-import { CodeFormData, codeSchema } from '@/lib/auth';
+import { CodeFormData, codeSchema } from '@/lib/schemas/auth';
 import { useSignIn, useSignUp } from '@clerk/expo';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
 import { Controller, useForm } from 'react-hook-form';
-import { ActivityIndicator, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native';
 
 type CodeVerificationProps = {
   email?: string;

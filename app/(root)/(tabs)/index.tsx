@@ -1,3 +1,4 @@
+import { userStore } from '@/store/userStore';
 import { useAuth, useClerk } from '@clerk/expo';
 import { Redirect, useRouter } from 'expo-router';
 import { View, Text, TouchableOpacity } from 'react-native'
@@ -10,6 +11,9 @@ export default function index() {
     if (!isLoaded) return null;
 
     if (!isSignedIn) return <Redirect href="/(auth)/sign-in" />
+
+    const needsOnboarding = userStore((state) => state.needsOnboarding)
+    console.log("needsOnboarding ",  needsOnboarding)
 
     const handleSignOut = async () => {
         try {

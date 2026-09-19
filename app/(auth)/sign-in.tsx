@@ -1,13 +1,12 @@
-import { ActivityIndicator, KeyboardAvoidingView, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import React from 'react'
-import { Link, useRouter } from 'expo-router'
-import { useAuth } from '@clerk/expo'
-import { useSignIn } from '@clerk/expo'
-import { Controller, useForm } from 'react-hook-form'
-import { SignInFormData, signInSchema } from '@/lib/auth'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { SafeAreaView } from 'react-native-safe-area-context'
 import CodeVerification from '@/components/CodeVerification'
+import { SignInFormData, signInSchema } from '@/lib/schemas/auth'
+import { useAuth, useSignIn } from '@clerk/expo'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Link, useRouter } from 'expo-router'
+import React from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { ActivityIndicator, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 const signIn = () => {
   const { isSignedIn } = useAuth();

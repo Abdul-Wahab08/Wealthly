@@ -22,7 +22,5 @@ export default function _layout() {
 
     if (needsOnboarding && pathname !== '/onboarding') return <Redirect href="/(root)/onboarding" />
 
-    if (!needsOnboarding && pathname === '/onboarding') return <Redirect href="/(root)/(tabs)" />
-
     return <Slot />
 }
