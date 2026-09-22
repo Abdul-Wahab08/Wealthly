@@ -16,6 +16,40 @@ async function getTransactions(supabase: SupabaseClient, userId: string, transac
     return data;
 }
 
+async function deleteTransaction(supabase: SupabaseClient, transactionId: string) {
+    const { data: transaction, error } = await supabase
+        .from('transactions')
+        .delete()
+        .eq('id', transactionId)
+        .select('account_id, type, amount')
+        .single()
+
+    if (error) throw error;
+    if (!transaction) throw new Error('Transaction not found');
+
+    const { data: account, error: accountError } = await supabase
+        .from('accounts')
+        .select('id, balance')
+        .eq('id', transaction.account_id)
+        .single()
+
+    if (accountError) throw accountError;
+
+    const amount = transaction.type === 'INCOME' ? -transaction.amount : transaction.amount
+
+    const { error: updateError } = await supabase
+        .from('accounts')
+        .update({
+            balance: account.balance + amount
+        })
+        .eq('id', account.id)
+
+    if (updateError) throw updateError;
+
+    return;
+}
+
 export {
-    getTransactions
+    getTransactions,
+    deleteTransaction
 }

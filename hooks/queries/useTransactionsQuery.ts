@@ -10,7 +10,7 @@ export function useTransactionsQuery(transactionFilters: TransactionFilters = {}
     const supabase = useSupabase();
 
     return useQuery({
-        queryKey: queryKeys.transactions(user!.id),
+        queryKey: queryKeys.transactions(user!.id, transactionFilters),
         queryFn: () => getTransactions(supabase, user!.id, transactionFilters),
         enabled: !!user,
     })
