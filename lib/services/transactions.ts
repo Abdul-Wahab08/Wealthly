@@ -1,4 +1,4 @@
-import { TransactionFilters } from "@/types";
+import { NewTransaction, TransactionFilters, TransactionType } from "@/types";
 import { SupabaseClient } from "@supabase/supabase-js";
 
 async function getTransactions(supabase: SupabaseClient, userId: string, transactionFilters: TransactionFilters = {}) {
@@ -49,7 +49,37 @@ async function deleteTransaction(supabase: SupabaseClient, transactionId: string
     return;
 }
 
+async function createTransaction(supabase: SupabaseClient, payload: NewTransaction) {
+    const { data: transaction, error: transactionError } = await supabase
+        .from('transactions')
+        .insert(payload)
+        .select()
+        .single();
+
+    if (transactionError) return { transaction: null, error: transactionError };
+
+    const { data: account, error: accountError } = await supabase
+        .from('accounts')
+        .select('id, balance')
+        .eq('id', transaction.account_id)
+        .single();
+
+    if (accountError) return { transaction, error: accountError };
+
+    const delta = transaction.type === 'INCOME' ? transaction.amount : -transaction.amount;
+
+    const { error: updateError } = await supabase
+        .from('accounts')
+        .update({
+            balance: account.balance + delta
+        })
+        .eq('id', account.id)
+
+    if (updateError) throw { transaction, error: updateError };
+}
+
 export {
     getTransactions,
-    deleteTransaction
+    deleteTransaction,
+    createTransaction
 }
