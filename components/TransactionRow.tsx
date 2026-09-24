@@ -3,7 +3,7 @@ import { formatPrice } from '@/lib/formatPrice';
 import { userStore } from '@/store/userStore';
 import { Transaction } from '@/types'
 import { Feather } from '@expo/vector-icons';
-import { View, Text, TouchableOpacity } from 'react-native'
+import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 import Swipeable from "react-native-gesture-handler/ReanimatedSwipeable";
 
 const INPUT_METHOD_ICON: Record<
@@ -16,10 +16,10 @@ const INPUT_METHOD_ICON: Record<
 };
 
 export default function TransactionRow(
-  { transaction, onDelete }: { transaction: Transaction, onDelete?: () => void }
+  { transaction, onDelete, deleting }: { transaction: Transaction, onDelete?: () => void, deleting?: boolean }
 ) {
 
-  const currency = userStore((state)=> state.currency)
+  const currency = userStore((state) => state.currency)
   const config = getCategoryConfig(transaction.category);
   const isIncome = transaction.type === "INCOME";
 
@@ -82,10 +82,14 @@ export default function TransactionRow(
         overshootRight={false}
         renderRightActions={() => (
           <TouchableOpacity
+            disabled={deleting}
             onPress={onDelete}
             className="bg-brand-coral rounded-2xl ml-2 w-16 items-center justify-center"
           >
-            <Feather name="trash-2" size={18} color="#fff" />
+            {deleting ?
+            <ActivityIndicator size="small" color="#5C5F68" />
+              :
+               <Feather name="trash-2" size={18} color="#fff" />}
           </TouchableOpacity>
         )}
       >

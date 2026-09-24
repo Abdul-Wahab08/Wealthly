@@ -5,7 +5,7 @@ import { useTransactionsQuery } from '@/hooks/queries/useTransactionsQuery';
 import { exportTransaction } from '@/lib/exportTransaction';
 import { Transaction, TransactionType } from '@/types';
 import { Feather } from '@expo/vector-icons';
-import { eachDayOfInterval, format, startOfDay, startOfDecade, startOfMonth } from 'date-fns';
+import { eachDayOfInterval, format, startOfDay, startOfMonth } from 'date-fns';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator, Alert } from 'react-native'
@@ -44,7 +44,7 @@ export default function transactions() {
     isError,
     refetch: refetchTransactions
   } = useTransactionsQuery({ type: typeFilter, accountId: activeAccountId });
-  const { mutateAsync: deleteTransaction, error: deleteError } = useDeleteTransaction()
+  const { mutateAsync: deleteTransaction, error: deleteError, isPending: deleting } = useDeleteTransaction()
 
   const loadData = () => {
     refetchAccounts();
@@ -242,7 +242,7 @@ export default function transactions() {
           data={filteredTransactions}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => (
-            <TransactionRow transaction={item} onDelete={() => handleDelete(item)} />
+            <TransactionRow transaction={item} onDelete={() => handleDelete(item)} deleting={deleting} />
           )}
           contentContainerStyle={{
             paddingHorizontal: 20,
