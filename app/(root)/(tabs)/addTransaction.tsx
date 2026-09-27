@@ -1,21 +1,26 @@
 import { useCreateTransaction } from '@/hooks/mutations/useTransactionsMutation'
 import { AddTransactionFormData } from '@/lib/schemas/addTransaction'
-import { Account, InputMethod } from '@/types';
+import { Account, ExtractedTransaction, InputMethod } from '@/types';
 import { useUser } from '@clerk/expo';
-import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { View, Text, KeyboardAvoidingView, Platform, ActivityIndicator, TouchableOpacity } from 'react-native'
+import { View, Text, KeyboardAvoidingView, Platform, ActivityIndicator, TouchableOpacity, Alert } from 'react-native'
 import { addTransactionSchema } from '@/lib/schemas/addTransaction';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useAccountsQuery } from '@/hooks/queries/useAccountsQuery';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Feather } from '@expo/vector-icons';
 import { ScrollView, TextInput } from 'react-native-gesture-handler';
-import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/constants/categories';
+import { CategoryKey, EXPENSE_CATEGORIES, INCOME_CATEGORIES } from '@/constants/categories';
 import CapsuleGroup from '@/components/CapsuleGroup';
-import { format } from 'date-fns';
+import { format, isValid } from 'date-fns';
 import DatePicker from '@/components/DatePicker';
+import AIActionCard from '@/components/AIActionCard';
+import { AI_GRADIENT, AI_GRADIENT_REVERSE } from '@/constants/theme';
+import ScannerModal from '@/components/ScannerModal';
+import VoiceModal from '@/components/VoiceModal';
+import { exportTransactionFromAudio, exportTransactionFromReceipt } from '@/lib/services/extractTransaction';
 
 const TYPE_OPTIONS = [
   { key: "EXPENSE" as const, label: "Expense" },
@@ -37,9 +42,15 @@ export default function addTransaction() {
   const [error, setError] = useState<string | null>(null);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
+  const [scanning, setScanning] = useState(false);
+  const [listening, setListening] = useState(false);
 
   const { user } = useUser();
   const router = useRouter();
+
+  const params = useLocalSearchParams<{ action?: string }>();
 
   const { mutateAsync: createTransaction, isPending: saving } = useCreateTransaction()
   const { data: accounts = [], isLoading: isLoadingAccounts, error: accountsError } = useAccountsQuery()
@@ -63,6 +74,10 @@ export default function addTransaction() {
   const date = watch("date");
 
   const categories = type === "INCOME" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+
+  useEffect(() => {
+    if (accounts.length === 0) reset(DEFAULT_VALUES(accounts))
+  }, [accounts])
 
   const onSubmit = async (data: AddTransactionFormData) => {
     if (!user) return
@@ -90,10 +105,76 @@ export default function addTransaction() {
         router.replace("/(root)/(tabs)/transactions");
       }
     } catch (error) {
-      console.log("Error creating transaction ", error)
       setError("Something went wrong. Please try again.")
     }
   }
+
+  const applyExtraction = (transaction: ExtractedTransaction) => {
+    const categoryList = transaction.type === "INCOME" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
+    const isValidCategory = (key: CategoryKey): key is CategoryKey => !!key && categoryList.some((c) => c.key === key)
+
+    const missing = [
+      transaction.amount == null && "amount",
+      !isValidCategory(transaction?.category) && "category",
+    ].filter(Boolean);
+    if (missing.length > 0) {
+      Alert.alert(
+        "Review before saving",
+        `Couldn't confidently read the ${missing.join(" and ")}. Please fill it in.`
+      );
+    }
+
+    if (transaction.type) setValue("type", transaction.type);
+    if (transaction.category && isValidCategory(transaction.category)) setValue("category", transaction.category);
+    if (transaction.amount != null) setValue("amount", String(transaction.amount));
+    if (transaction.description) setValue("description", transaction.description);
+    if (transaction.transcript) setVoiceTranscript(transaction.transcript)
+    if (transaction.date) {
+      const parsedDate = new Date(transaction.date);
+      if (isValid(parsedDate) && parsedDate <= new Date()) {
+        setValue("date", parsedDate);
+      }
+    }
+  }
+
+  const handleCapturedImage = async (base64Image: string, mimeType: string) => {
+    setScanning(true);
+    setScannerOpen(false);
+
+    try {
+      const transaction = await exportTransactionFromReceipt(base64Image, mimeType)
+      applyExtraction(transaction)
+      setInputMethod("RECEIPT_SCAN")
+    } catch (error) {
+      Alert.alert("Error", "Couldn't read that receipt. Try again or enter it manually.");
+    } finally {
+      setScanning(false);
+    }
+  }
+
+  const handleRecordedAudio = async (base64Audio: string, mimeType: string) => {
+    setListening(true);
+    try {
+      const transaction = await exportTransactionFromAudio(base64Audio, mimeType)
+      setInputMethod("VOICE")
+      applyExtraction(transaction)
+    } catch (error) {
+      Alert.alert("Error", "Couldn't read that audio. Try again or enter it manually.");
+    } finally {
+      setListening(false);
+    }
+  }
+
+  useEffect(() => {
+    if (params.action === "scan") {
+      setScannerOpen(true);
+      router.setParams({ action: undefined });
+    } else if (params.action === "voice") {
+      setVoiceModalOpen(true);
+      router.setParams({ action: undefined });
+    }
+  }, [params.action])
+
   return (
     <SafeAreaView className="flex-1 bg-brand-body" edges={["top"]}>
       <View className="px-5 pt-3 pb-2">
@@ -132,7 +213,7 @@ export default function addTransaction() {
               paddingBottom: 100,
             }}
           >
-            {/* <View className="flex-row gap-2.5 mb-4">
+            <View className="flex-row gap-2.5 mb-4">
               <AIActionCard
                 icon="camera"
                 title="Scan receipt"
@@ -147,7 +228,7 @@ export default function addTransaction() {
                 colors={AI_GRADIENT_REVERSE}
                 onPress={() => setVoiceModalOpen(true)}
               />
-            </View> */}
+            </View>
 
             {/* Type toggle */}
             <View className="flex-row bg-white rounded-xl border border-[#E8E6DF] p-1 mb-4">
@@ -168,8 +249,8 @@ export default function addTransaction() {
                 >
                   <Text
                     className={`text-xs font-medium ${type === t.key
-                        ? "text-white"
-                        : "text-brand-text-secondary"
+                      ? "text-white"
+                      : "text-brand-text-secondary"
                       }`}
                   >
                     {t.label}
@@ -300,9 +381,41 @@ export default function addTransaction() {
                 {saving ? "Saving..." : "Save Transaction"}
               </Text>
             </TouchableOpacity>
+
           </ScrollView>
         )}
       </KeyboardAvoidingView>
+
+      {scanning && (
+        <View className="absolute inset-0 items-center justify-center bg-black/40">
+          <View className="bg-white rounded-2xl px-6 py-5 items-center">
+            <ActivityIndicator color="#4A9EFF" />
+            <Text className="text-brand-bg text-sm mt-3">Reading receipt…</Text>
+          </View>
+        </View>
+      )}
+
+      <ScannerModal
+        visible={scannerOpen}
+        onClose={() => setScannerOpen(false)}
+        onCaptured={handleCapturedImage}
+      />
+
+      {listening && (
+        <View className="absolute inset-0 items-center justify-center bg-black/40">
+          <View className="bg-white rounded-2xl px-6 py-5 items-center">
+            <ActivityIndicator color="#4A9EFF" />
+            <Text className="text-brand-bg text-sm mt-3">Processing audio…</Text>
+          </View>
+        </View>
+      )}
+
+      <VoiceModal
+        visible={voiceModalOpen}
+        onClose={() => setVoiceModalOpen(false)}
+        onRecorded={handleRecordedAudio}
+      />
+
     </SafeAreaView>
   )
 }
