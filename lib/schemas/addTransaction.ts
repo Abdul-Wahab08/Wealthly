@@ -1,3 +1,4 @@
+import { CategoryKey } from "@/constants/categories";
 import * as z from "zod";
 
 export const addTransactionSchema = z.object({
@@ -9,7 +10,7 @@ export const addTransactionSchema = z.object({
             const parsed = parseFloat(value.replace(/,/g, ""));
             return !Number.isNaN(parsed) && parsed > 0;
         }, "Enter a valid number."),
-    category: z.string().min(1, "Select a category."),
+    category: z.custom<CategoryKey>((value) => typeof value === "string"),
     account: z.string().min(1, "Select an account."),
     date: z.date(),
     description: z.string().optional()

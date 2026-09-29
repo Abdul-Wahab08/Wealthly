@@ -111,11 +111,11 @@ export default function addTransaction() {
 
   const applyExtraction = (transaction: ExtractedTransaction) => {
     const categoryList = transaction.type === "INCOME" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
-    const isValidCategory = (key: CategoryKey): key is CategoryKey => !!key && categoryList.some((c) => c.key === key)
+    const isValidCategory = (key: CategoryKey | null): key is CategoryKey => !!key && categoryList.some((c) => c.key === key)
 
     const missing = [
       transaction.amount == null && "amount",
-      !isValidCategory(transaction?.category) && "category",
+      !isValidCategory(transaction.category) && "category",
     ].filter(Boolean);
     if (missing.length > 0) {
       Alert.alert(

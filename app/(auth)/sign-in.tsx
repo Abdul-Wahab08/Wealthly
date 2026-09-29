@@ -1,6 +1,6 @@
 import CodeVerification from '@/components/CodeVerification'
 import { SignInFormData, signInSchema } from '@/lib/schemas/auth'
-import { useAuth, useSignIn } from '@clerk/expo'
+import { useSignIn } from '@clerk/expo'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Link, useRouter } from 'expo-router'
 import React from 'react'
@@ -8,8 +8,8 @@ import { Controller, useForm } from 'react-hook-form'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
+
 const signIn = () => {
-  const { isSignedIn } = useAuth();
   const { signIn, errors, fetchStatus } = useSignIn()
 
   const isLoading: boolean = fetchStatus === "fetching";

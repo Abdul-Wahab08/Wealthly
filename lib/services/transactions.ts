@@ -75,11 +75,45 @@ async function createTransaction(supabase: SupabaseClient, payload: NewTransacti
         })
         .eq('id', account.id)
 
-    if (updateError) throw { transaction, error: updateError };
+    if (updateError) return { transaction, error: updateError };
+
+    return { transaction, error: null };
+}
+
+async function startingBalanceTransaction(supabase: SupabaseClient, payload: NewTransaction) {
+    const { data: defaultAccount, error: defaultAccountError } = await supabase
+        .from("accounts")
+        .select("id, balance")
+        .eq("user_id", payload.user_id)
+        .eq("is_default", true)
+        .single();
+
+    if (defaultAccountError || !defaultAccount) return { transaction: null, error: defaultAccountError };
+
+    const { data: startingBalanceTransaction, error: startingBalanceTransactionError } = await supabase
+        .from("transactions")
+        .insert({
+            ...payload,
+            account_id: defaultAccount.id,
+        })
+        .select()
+        .single();
+
+    if (startingBalanceTransactionError) return { transaction: null, error: startingBalanceTransactionError };
+
+    const { error: updateBalanceError } = await supabase
+        .from("accounts")
+        .update({ balance: defaultAccount.balance + payload.amount })
+        .eq("id", defaultAccount.id)
+
+    if (updateBalanceError) return { transaction: null, error: updateBalanceError };
+
+    return { transaction: startingBalanceTransaction, error: null };
 }
 
 export {
     getTransactions,
     deleteTransaction,
-    createTransaction
+    createTransaction,
+    startingBalanceTransaction
 }

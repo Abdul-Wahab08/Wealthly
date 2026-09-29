@@ -10,6 +10,9 @@ import { useUser } from '@clerk/expo';
 import { userStore } from '@/store/userStore';
 import { useSupabase } from '@/hooks/useSupabase';
 import { router } from 'expo-router';
+import { useUpdateCurrency } from "@/hooks/mutations/useUpdateCurrencyMutation";
+import { useStartingBalanceTransaction } from '@/hooks/mutations/useTransactionsMutation';
+import { NewTransaction } from '@/types';
 
 export default function onboarding() {
   const [pickerOpen, setPickerOpen] = useState<boolean>(false)
@@ -22,6 +25,8 @@ export default function onboarding() {
   const setNeedsOnboarding = userStore((state) => state.setNeedsOnboarding)
 
   const supabaseClient = useSupabase();
+  const { mutateAsync: updateCurrency, error: updateCurrencyError } = useUpdateCurrency();
+  const { mutateAsync: startingBalanceTransaction, error: transactionError } = useStartingBalanceTransaction();
 
   const { control, handleSubmit, formState: { errors: formErrors } } = useForm<OnboardingFormData>({
     resolver: zodResolver(onboardingSchema),
@@ -32,60 +37,35 @@ export default function onboarding() {
   });
 
   const handleSave = async (data: OnboardingFormData) => {
+    if (!user) return;
     const parsed = parseFloat(data.startingBalance.replace(/,/g, ""));
     setSaving(true)
     setError('')
 
-    const { error: updateuserError } = await supabaseClient
-      .from("users")
-      .update({ currency: selectedCurrency.code })
-      .eq("clerk_id", user?.id)
+    await updateCurrency(selectedCurrency.code);
 
-    if (updateuserError) {
+    if (updateCurrencyError) {
       setError("Something went wrong. Please try again.")
       setSaving(false)
       return
     }
 
-    const { data: defaultAccount, error: defaultAccountError } = await supabaseClient
-      .from("accounts")
-      .select("id, balance")
-      .eq("user_id", user?.id)
-      .single();
-
-    if (defaultAccountError || !defaultAccount) {
-      setError("Something went wrong. Please try again.")
-      setSaving(false)
-      return
+    const payload: NewTransaction = {
+      account_id: '',
+      user_id: user.id,
+      type: "INCOME",
+      category: "other_income",
+      amount: parsed,
+      description: "Starting balance",
+      date: new Date().toISOString(),
+      input_method: "MANUAL",
     }
 
-    const { error: transactionError } = await supabaseClient
-      .from("transactions")
-      .insert({
-        account_id: defaultAccount.id,
-        user_id: user?.id,
-        type: "INCOME",
-        category: "other_income",
-        amount: parsed,
-        description: "Starting balance",
-        date: new Date().toISOString(),
-        input_method: "MANUAL",
-      })
-
-    if (transactionError) {
-      setError("Something went wrong. Please try again.")
-      setSaving(false)
-      return
-    }
-
-    const { error: updateBalanceError } = await supabaseClient
-      .from("accounts")
-      .update({ balance: defaultAccount.balance + parsed })
-      .eq("id", defaultAccount.id)
+    await startingBalanceTransaction(payload);
 
     setSaving(false)
 
-    if (updateBalanceError) {
+    if (transactionError) {
       setError("Something went wrong. Please try again.")
       return
     }
@@ -119,7 +99,7 @@ export default function onboarding() {
           </Text>
           <View className="flex-row items-center bg-white border border-[#E8E6DF] rounded-xl px-4 mb-1">
             <Text className="text-brand-text-secondary text-sm mr-2">
-             {selectedCurrency.symbol}
+              {selectedCurrency.symbol}
             </Text>
 
             <Controller
@@ -158,7 +138,7 @@ export default function onboarding() {
             className="flex-row items-center justify-between bg-white border border-[#E8E6DF] rounded-xl px-4 py-3.5 mb-6"
           >
             <Text className="text-sm text-brand-bg">
-             {selectedCurrency.symbol} {selectedCurrency.code} —{" "}
+              {selectedCurrency.symbol} {selectedCurrency.code} —{" "}
               {selectedCurrency.name}
             </Text>
             <Feather name="chevron-down" size={16} color="#8A8D96" />

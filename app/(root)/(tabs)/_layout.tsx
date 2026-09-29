@@ -1,10 +1,14 @@
+import { useUser } from "@clerk/expo";
 import { Feather } from "@expo/vector-icons";
-import { Tabs } from 'expo-router';
+import { Redirect, Tabs } from 'expo-router';
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { Platform } from 'react-native';
 
 export default function _layout() {
   const useNativeTabs = Platform.OS === "ios";
+  const { isSignedIn } = useUser();
+
+  if (!isSignedIn) return <Redirect href="/(auth)/sign-in" />
 
   if (useNativeTabs) {
     return (
