@@ -34,7 +34,10 @@ export function useDeleteAccountMutation() {
         mutationFn: (
             { accountId, force }: { accountId: string, force?: boolean }
         ) => deleteAccount(supabase, accountId, { force }),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.accounts(user!.id) }),
+        onSuccess: (result) => {
+            queryClient.invalidateQueries({ queryKey: queryKeys.accounts(user!.id) })
+            if (result.isDeleted) queryClient.invalidateQueries({ queryKey: queryKeys.transactions(user!.id) })
+        }
     })
 }
 

@@ -33,22 +33,12 @@ async function createAccount(supabase: SupabaseClient, userId: string, { name, t
 }
 
 async function setDefaultAccount(supabase: SupabaseClient, userId: string, accountId: string) {
-    const { error: removeDefaultAccountError } = await supabase
-        .from('accounts')
-        .update({
-            is_default: false
-        })
-        .eq('user_id', userId)
-        .neq("id", accountId);
+    const { error } = await supabase.rpc('set_default_account', {
+        target_account_id: accountId,
+        target_user_id: userId
+    })
 
-    if (removeDefaultAccountError) throw removeDefaultAccountError;
-
-    const { error: setDefaultAccountError } = await supabase
-        .from("accounts")
-        .update({ is_default: true })
-        .eq("id", accountId)
-
-    if (setDefaultAccountError) throw setDefaultAccountError;
+    if (error) throw error
 }
 
 async function deleteAccount(supabase: SupabaseClient, accountId: string, { force = false }: { force?: boolean } = {}) {
