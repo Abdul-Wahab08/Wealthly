@@ -11,6 +11,17 @@ import ProfileRow from '@/components/ProfileRow';
 import { userStore } from '@/store/userStore';
 import CurrencyPicker, { Currency } from '@/components/CurrencyPicker';
 import { useUpdateCurrency } from '@/hooks/mutations/useUpdateCurrencyMutation';
+import AccountModal from '@/components/AccountModal';
+import { useAccountsQuery } from '@/hooks/queries/useAccountsQuery';
+import { Account, AccountType } from '@/types';
+import { formatPrice } from '@/lib/formatPrice';
+
+const ACCOUNT_ICON: Record<AccountType, keyof typeof Feather.glyphMap> = {
+    CASH: "dollar-sign",
+    BANK: "home",
+    CREDIT_CARD: "credit-card",
+    SAVINGS: "shield",
+};
 
 function SectionLabel({ children }: { children: string }) {
     return (
@@ -22,6 +33,8 @@ function SectionLabel({ children }: { children: string }) {
 export default function profile() {
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
     const [currencyPickerVisible, setCurrencyPickerVisible] = useState(false);
+    const [editingAccount, setEditingAccount] = useState<Account | null>(null);
+    const [modalVisible, setModalVisible] = useState(false);
 
     const { signOut } = useClerk()
     const { user } = useUser();
@@ -29,7 +42,13 @@ export default function profile() {
     const currency = userStore((state) => state.currency)
     const setCurrency = userStore((state) => state.setCurrency)
 
-    const { mutateAsync: updateCurrency, error: updateCurrencyError, isPending: updatingCurrency } = useUpdateCurrency();
+    const { mutateAsync: updateCurrency, error: updateCurrencyError } = useUpdateCurrency();
+    const { data: accounts = [], isLoading: isLoadingAccounts, isError: isErrorAccounts } = useAccountsQuery();
+
+    const closeModal = () => {
+        setModalVisible(false);
+        setEditingAccount(null);
+    }
 
     const handleSignOut = async () => {
         Alert.alert("Sign out", "Are you sure you want to sign out?", [
@@ -75,7 +94,6 @@ export default function profile() {
                 file: dataUrl,
             })
         } catch (error) {
-            console.error("Avatar upload failed:", error);
             Alert.alert("Error", "Couldn't upload your photo. Please try again.");
         } finally {
             setUploadingAvatar(false);
@@ -144,7 +162,41 @@ export default function profile() {
 
                 {/* Accounts */}
                 <SectionLabel>Accounts</SectionLabel>
-                <View className="mx-5 rounded-2xl overflow-hidden border border-[#E8E6DF]"></View>
+                <View className="mx-5 rounded-2xl overflow-hidden border border-[#E8E6DF]">
+                    {isLoadingAccounts ? (
+                        <View className="bg-white px-4 py-5 items-center">
+                            <ActivityIndicator color="#5C5F68" />
+                        </View>
+                    ) : isErrorAccounts ? (
+                        <View className="bg-white px-4 py-5 items-center">
+                            <Text className="text-brand-text-muted text-xs">
+                                Couldn&apos;t load your accounts.
+                            </Text>
+                        </View>
+                    ) : (
+                        accounts.map((account: Account) => (
+                            <ProfileRow
+                                key={account.id}
+                                value={formatPrice(account.balance, currency)}
+                                label={account.name + (account.is_default ? " (default)" : "")}
+                                icon={ACCOUNT_ICON[account.type]}
+                                onPress={() => {
+                                    setModalVisible(true)
+                                    setEditingAccount(account)
+                                }}
+                            />
+                        ))
+                    )}
+
+                    <ProfileRow
+                        icon="plus"
+                        label="Add account"
+                        onPress={() => {
+                            setEditingAccount(null)
+                            setModalVisible(true)
+                        }}
+                    />
+                </View>
 
                 {/* Preferences */}
                 <SectionLabel>Preferences</SectionLabel>
@@ -168,6 +220,13 @@ export default function profile() {
                     />
                 </View>
             </ScrollView>
+
+            {user && <AccountModal
+                visible={modalVisible}
+                onClose={closeModal}
+                account={editingAccount}
+                onSaved={closeModal}
+            />}
 
             <CurrencyPicker
                 visible={currencyPickerVisible}
