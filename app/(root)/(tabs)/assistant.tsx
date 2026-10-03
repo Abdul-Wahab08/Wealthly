@@ -47,7 +47,7 @@ function MessageBubble({ message }: { message: ChatMessage }) {
   );
 }
 
-export default function assistant() {
+export default function Assistant() {
   const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
   const [prompt, setPrompt] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
@@ -81,10 +81,14 @@ export default function assistant() {
     setLoading(true);
 
     try {
-      const [
-        { data: transactions = [] },
-        { data: budget = null }
-      ] = await Promise.all([refetchTransactions(), refetchBudgets()]);
+      const [transactionsResult, budgetResult] = await Promise.all([refetchTransactions(), refetchBudgets()]);
+
+      if (transactionsResult.error) throw transactionsResult.error;
+      if (budgetResult.error) throw budgetResult.error;
+
+      const transactions = transactionsResult.data ?? [];
+      const budget = budgetResult.data ?? null;
+
       const response = await askAssistant(text, transactions, budget, currency);
       setMessages((prev) => [...prev, { id: Date.now().toString(), role: "assistant", content: response }]);
     } catch (error) {
