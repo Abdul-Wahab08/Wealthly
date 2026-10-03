@@ -145,7 +145,7 @@ export default function Assistant() {
 
         <View
           className="flex-row items-center gap-2 px-5 pt-2"
-          style={{ paddingBottom: keyboardVisible ? 0 : insets.bottom + 200 }}
+          style={{ paddingBottom: keyboardVisible ? insets.bottom + 200 : insets.bottom - 40 }}
         >
           <TextInput
             value={prompt}

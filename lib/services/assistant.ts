@@ -10,7 +10,9 @@ function createContext(transactions: Transaction[], budget: Budget | null, curre
     const now = new Date();
     const cutoff = subDays(now, 30);
     const recent = transactions.filter((tx) => new Date(tx.date) >= cutoff);
-    const thisMonthExpense = transactions
+    const thisMonth = transactions.filter((tx) => isSameMonth(new Date(tx.date), now));
+
+    const thisMonthExpense = thisMonth
         .filter((tx) => tx.type === "EXPENSE" && isSameMonth(new Date(tx.date), now))
         .reduce((sum, tx) => sum + tx.amount, 0);
 
@@ -21,9 +23,14 @@ function createContext(transactions: Transaction[], budget: Budget | null, curre
     recent.forEach((tx) => {
         if (tx.type === "EXPENSE") {
             expense += tx.amount;
-            spentByCategory[tx.category] = (spentByCategory[tx.category] ?? 0) + tx.amount;
         } else {
             income += tx.amount;
+        }
+    });
+
+    thisMonth.forEach((tx) => {
+        if (tx.type === "EXPENSE") {
+            spentByCategory[tx.category] = (spentByCategory[tx.category] ?? 0) + tx.amount;
         }
     });
 
@@ -43,7 +50,6 @@ function createContext(transactions: Transaction[], budget: Budget | null, curre
         : "No monthly budget set.";
 
     const txLines = recent
-        .slice(0, 40)
         .map(
             (tx) =>
                 `- ${format(new Date(tx.date), "d MMM yyyy")} | ${tx.type} | ${getCategoryConfig(tx.category).label
@@ -62,7 +68,7 @@ ${categoryLines || "No expenses recorded."}
 Monthly budget:
 ${budgetLine}
 
-Recent transactions:
+Recent transactions: (last 30 days)
 ${txLines || "No transactions recorded."}`;
 }
 
@@ -76,7 +82,19 @@ export async function askAssistant(
     if (!apiKey) throw new Error('Missing Google Gemini API key');
 
     const context = createContext(transactions, budget, currency);
-    const prompt = `You are a helpful personal finance assistant inside the Welth app. Answer the user's question using only the financial data below. Be concise and specific with numbers. If the data doesn't answer the question, say so. ${context} User question: ${promptUser}`;
+    const prompt = `You are a helpful personal finance assistant inside the Welth app. 
+
+Rules:
+- Answer in plain text only. No markdown, no asterisks, no bold, no bullet symbols.
+- Be concise. 2-4 sentences max unless the user asks for details.
+- Use numbers and specifics from the data provided.
+- If the data doesn't answer the question, say so briefly.
+- Never explain what you're about to do, just answer directly.
+
+Financial data:
+${context}
+
+User question: ${promptUser}`; 
 
     const response = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
         method: "POST",
