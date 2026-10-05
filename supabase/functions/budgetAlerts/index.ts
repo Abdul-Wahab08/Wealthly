@@ -99,7 +99,7 @@ Deno.serve(async () => {
       </table>
       <p style="margin:0;color:#5C5F68;">
         ${threshold >= 100
-        ? "Take a look at your recent transactions in Welth to see what pushed you over, and consider adjusting your budget if it no longer fits your spending."
+        ? "Take a look at your recent transactions in Wealthly to see what pushed you over, and consider adjusting your budget if it no longer fits your spending."
         : "You're on track for now — keep an eye on your spending for the rest of the month to stay within budget."
       }
       </p>
@@ -112,7 +112,7 @@ Deno.serve(async () => {
     })
 
     const { error: updateError } = await supabase
-      .from("budget")
+      .from("budgets")
       .update({
         last_alert_sent: now,
         last_alert_threshold: threshold
