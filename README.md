@@ -1,20 +1,35 @@
-# Wealthly
+# Wealthly - Personal Finance App
 
-**Wealthly** is an AI-powered personal finance app built with Expo and React Native. Track income and expenses, manage accounts and budgets, scan receipts, log spending by voice, and ask a spending assistant about the last 30 days of activity.
+![Expo](https://img.shields.io/badge/Expo-54-000020?logo=expo&logoColor=white)
+![React Native](https://img.shields.io/badge/React_Native-0.81-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)
+![Supabase](https://img.shields.io/badge/Supabase-Backend-3FCF8E?logo=supabase&logoColor=white)
+![Clerk](https://img.shields.io/badge/Clerk-Auth-6C47FF?logo=clerk&logoColor=white)
+![Gemini](https://img.shields.io/badge/Google-Gemini-4285F4?logo=google&logoColor=white)
 
-Repo: [github.com/Abdul-Wahab08/Wealthly](https://github.com/Abdul-Wahab08/Wealthly)
+**Wealthly** is an AI-powered personal finance mobile app built with Expo and React Native. Track income and expenses, manage accounts and budgets, scan receipts, log spending by voice, and ask a spending assistant about the last 30 days of activity.
+
+📦 Repo: [github.com/Abdul-Wahab08/Wealthly](https://github.com/Abdul-Wahab08/Wealthly)
 
 ---
 
-## Features
 
-### Authentication and onboarding
+
+## ✨ Features
+
+
+
+### 🔐 Authentication and onboarding
+
 - Email and password **sign up** and **sign in** with [Clerk](https://clerk.com)
 - Email verification and MFA email code when Clerk requires extra trust
 - First-time users are synced into Supabase (`users` + default cash account)
 - **Onboarding** for preferred currency and starting balance
 
-### Home dashboard
+
+
+### 🏠 Home dashboard
+
 - Time-of-day greeting and profile avatar
 - Combined balance across accounts
 - Current-month income and expense totals
@@ -24,83 +39,114 @@ Repo: [github.com/Abdul-Wahab08/Wealthly](https://github.com/Abdul-Wahab08/Wealt
 - **Pie chart** of this month’s spending by category
 - Latest five transactions
 
-### Transactions
+
+
+### 📋 Transactions
+
 - Full history with search (description or category)
 - Filters: All / Income / Expense, plus by account
 - Daily income vs expense **bar chart** for the current month
 - Delete a transaction
 - **CSV export** via the system share sheet
 
-### Add transaction
+
+
+### ➕ Add transaction
+
 - Expense or income with Zod-validated forms (React Hook Form)
 - Categories, account, date, amount, and description
-- **Receipt scan**: camera capture or photo library → Gemini extracts type, amount, category, date, and description
-- **Voice entry**: record audio → Gemini fills the same fields (transcript stored when input method is voice)
+- 📷 **Receipt scan**: camera capture or photo library → Gemini extracts type, amount, category, date, and description
+- 🎙️ **Voice entry**: record audio → Gemini fills the same fields (transcript stored when input method is voice)
 
-### AI assistant
+
+
+### 🧠 AI assistant
+
 - Chat about spending and budgets using the last 30 days of data
 - Suggested prompts (food spend, biggest expense, over-budget)
 - Answers from Google Gemini with your transactions and monthly budget as context
 
-### Profile
+
+
+### 👤 Profile
+
 - Name and email from Clerk
 - Profile photo from the device library
 - Preferred **currency**
-- Manage accounts: cash, bank, credit card, savings (create, edit, balances)
+- Manage accounts: 💵 cash, 🏦 bank, 💳 credit card, 🛡️ savings (create, edit, balances)
 - Sign out
 
-### Email jobs (Supabase Edge Functions)
-- **Budget alerts**: emailed via Resend when monthly spend hits **80%** or **100%** of the budget
-- **Weekly tips**: Gemini-generated, category-aware tips from the last 7 days of activity
 
-### Categories
 
-**Expenses:** Food & Dining, Groceries, Transport, Shopping, Entertainment, Health, Utilities, Rent, Education, Travel, Insurance, Subscriptions, EMI / Loan, Personal Care, Other
+### 📧 Email jobs (Supabase Edge Functions)
 
-**Income:** Salary, Freelance, Business, Investment, Gift, Other Income
+- 🚨 **Budget alerts**: emailed via Resend when monthly spend hits **80%** or **100%** of the budget
+- 💡 **Weekly tips**: Gemini-generated, category-aware tips from the last 7 days of activity
+
+
+
+### 🏷️ Categories
+
+**Expenses**
+
+🍔 Food & Dining · 🛒 Groceries · 🚗 Transport · 🛍️ Shopping · 🎬 Entertainment · 💊 Health · 💡 Utilities · 🏠 Rent · 📚 Education · ✈️ Travel · 🛡️ Insurance · 📱 Subscriptions · 🏦 EMI / Loan · 💇 Personal Care · 📦 Other
+
+**Income**
+
+💼 Salary · 💻 Freelance · 🏢 Business · 📈 Investment · 🎁 Gift · 💰 Other Income
 
 ---
 
-## Screens
 
-| Route | Purpose |
-| --- | --- |
-| `/(auth)/sign-in` | Sign in |
-| `/(auth)/sign-up` | Create account |
-| `/(root)/onboarding` | Currency + starting balance |
-| `/(root)/(tabs)/` | Home dashboard |
-| `/(root)/(tabs)/transactions` | History, charts, export |
-| `/(root)/(tabs)/addTransaction` | Manual / scan / voice |
-| `/(root)/(tabs)/assistant` | Spending chat |
-| `/(root)/(tabs)/profile` | Settings and accounts |
+
+## 📱 Screens
+
+
+|     | Route                           | Purpose                     |
+| --- | ------------------------------- | --------------------------- |
+| 🔑  | `/(auth)/sign-in`               | Sign in                     |
+| ✍️  | `/(auth)/sign-up`               | Create account              |
+| 🚀  | `/(root)/onboarding`            | Currency + starting balance |
+| 🏠  | `/(root)/(tabs)/`               | Home dashboard              |
+| 📋  | `/(root)/(tabs)/transactions`   | History, charts, export     |
+| ➕   | `/(root)/(tabs)/addTransaction` | Manual / scan / voice       |
+| 🧠  | `/(root)/(tabs)/assistant`      | Spending chat               |
+| 👤  | `/(root)/(tabs)/profile`        | Settings and accounts       |
+
 
 iOS uses native tabs; Android uses a custom tab bar.
 
 ---
 
-## Tech stack
 
-| Layer | Choice |
-| --- | --- |
-| App | [Expo](https://docs.expo.dev/versions/v54.0.0/) SDK **54**, React Native **0.81**, React **19** |
-| Navigation | [Expo Router](https://docs.expo.dev/router/introduction/) (file-based, typed routes) |
-| Auth | [Clerk](https://clerk.com) (`@clerk/expo`) with secure token cache |
-| Backend / DB | [Supabase](https://supabase.com) (Postgres + JS client + Edge Functions) |
-| Server state | [TanStack Query](https://tanstack.com/query) |
-| Client state | [Zustand](https://github.com/pmndrs/zustand) |
-| Forms / validation | React Hook Form + Zod |
-| Styling | [NativeWind](https://www.nativewind.dev/) (Tailwind CSS) |
-| Charts | `react-native-gifted-charts` |
-| AI | Google Gemini (`gemini-3.1-flash-lite`) |
-| Email | [Resend](https://resend.com) (Edge Functions) |
-| Device | Camera, image picker, audio recording, file system, sharing, haptics, blur, linear gradient |
-| Language | TypeScript |
+
+## 🧰 Tech stack
+
+
+|     | Layer              | Choice                                                                                          |
+| --- | ------------------ | ----------------------------------------------------------------------------------------------- |
+| 📱  | App                | [Expo](https://docs.expo.dev/versions/v54.0.0/) SDK **54**, React Native **0.81**, React **19** |
+| 🧭  | Navigation         | [Expo Router](https://docs.expo.dev/router/introduction/) (file-based, typed routes)            |
+| 🔐  | Auth               | [Clerk](https://clerk.com) (`@clerk/expo`) with secure token cache                              |
+| 🗄️ | Backend / DB       | [Supabase](https://supabase.com) (Postgres + JS client + Edge Functions)                        |
+| ⚡   | Server state       | [TanStack Query](https://tanstack.com/query)                                                    |
+| 📦  | Client state       | [Zustand](https://github.com/pmndrs/zustand)                                                    |
+| ✅   | Forms / validation | React Hook Form + Zod                                                                           |
+| 🎨  | Styling            | [NativeWind](https://www.nativewind.dev/) (Tailwind CSS)                                        |
+| 📊  | Charts             | `react-native-gifted-charts`                                                                    |
+| 🤖  | AI                 | Google Gemini (`gemini-3.1-flash-lite`)                                                         |
+| ✉️  | Email              | [Resend](https://resend.com) (Edge Functions)                                                   |
+| 📷  | Device             | Camera, image picker, audio recording, file system, sharing, haptics, blur, linear gradient     |
+| 📘  | Language           | TypeScript                                                                                      |
+
 
 Expo **New Architecture** and React Compiler experiments are enabled in `app.json`.
 
 ---
 
-## Project structure
+
+
+## 📁 Project structure
 
 ```
 app/                    # Expo Router screens
@@ -121,13 +167,15 @@ supabase/functions/     # budgetAlerts, weeklyTips
 
 ---
 
-## Prerequisites
 
-- [Node.js](https://nodejs.org/) 18+ (LTS recommended)
-- npm (ships with Node)
-- [Git](https://git-scm.com/)
-- [Expo Go](https://expo.dev/go) on a phone, or an iOS Simulator / Android Emulator
-- Accounts:
+
+## ✅ Prerequisites
+
+- 🟢 [Node.js](https://nodejs.org/) 18+ (LTS recommended)
+- 📦 npm (ships with Node)
+- 🌿 [Git](https://git-scm.com/)
+- 📲 [Expo Go](https://expo.dev/go) on a phone, or an iOS Simulator / Android Emulator
+- 🔑 Accounts:
   - [Clerk](https://dashboard.clerk.com)
   - [Supabase](https://supabase.com/dashboard)
   - [Google AI Studio](https://aistudio.google.com/) (Gemini API key)
@@ -135,23 +183,25 @@ supabase/functions/     # budgetAlerts, weeklyTips
 
 ---
 
-## Clone the repository
 
-HTTPS:
+
+## 📥 Clone the repository
+
+**HTTPS**
 
 ```bash
 git clone https://github.com/Abdul-Wahab08/Wealthly.git
 cd Wealthly
 ```
 
-SSH:
+**SSH** 🔑
 
 ```bash
 git clone git@github.com:Abdul-Wahab08/Wealthly.git
 cd Wealthly
 ```
 
-GitHub CLI:
+**GitHub CLI**
 
 ```bash
 gh repo clone Abdul-Wahab08/Wealthly
@@ -160,15 +210,21 @@ cd Wealthly
 
 ---
 
-## Install and configure
 
-### 1. Install dependencies
+
+## ⚙️ Install and configure
+
+
+
+### 1️⃣ Install dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Environment variables
+
+
+### 2️⃣ Environment variables
 
 Create a `.env` file in the project root (this file is gitignored):
 
@@ -179,16 +235,18 @@ EXPO_PUBLIC_SUPABASE_KEY=your_supabase_anon_key
 EXPO_PUBLIC_GOOGLE_GEMINI_API_KEY=your_gemini_api_key
 ```
 
-| Variable | Where to get it |
-| --- | --- |
-| `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk Dashboard → API keys |
-| `EXPO_PUBLIC_SUPABASE_URL` | Supabase → Project Settings → API |
-| `EXPO_PUBLIC_SUPABASE_KEY` | Supabase anon (public) key |
-| `EXPO_PUBLIC_GOOGLE_GEMINI_API_KEY` | Google AI Studio |
+
+| Variable                            | Where to get it                   |
+| ----------------------------------- | --------------------------------- |
+| `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk Dashboard → API keys        |
+| `EXPO_PUBLIC_SUPABASE_URL`          | Supabase → Project Settings → API |
+| `EXPO_PUBLIC_SUPABASE_KEY`          | Supabase anon (public) key        |
+| `EXPO_PUBLIC_GOOGLE_GEMINI_API_KEY` | Google AI Studio                  |
+
 
 The app talks to Supabase with a Clerk session token (`createClerkSupabaseClient`). In Clerk, enable the Supabase integration / JWT template so `getToken()` is accepted by your project’s RLS policies.
 
-### 3. Backend (Supabase)
+### 3️⃣ Backend (Supabase)
 
 You need tables the app already uses:
 
@@ -216,7 +274,9 @@ Schedule them with Supabase cron (or your own scheduler) so budget alerts and we
 
 ---
 
-## Run the app
+
+
+## ▶️ Run the app
 
 ```bash
 npm start
@@ -230,10 +290,10 @@ npx expo start
 
 Then:
 
-- Scan the QR code with **Expo Go** (Android) or the Camera app (iOS)
-- Press `a` for Android emulator
-- Press `i` for iOS simulator
-- Press `w` for web
+- 📷 Scan the QR code with **Expo Go** (Android) or the Camera app (iOS)
+- 🤖 Press `a` for Android emulator
+- 🍎 Press `i` for iOS simulator
+- 🌐 Press `w` for web
 
 Other scripts:
 
@@ -244,11 +304,13 @@ npm run web       # Expo start targeting web
 npm run lint      # ESLint (expo lint)
 ```
 
-> Receipt camera, voice recording, and some native modules work best on a **device or simulator**, not only in a limited web preview.
+> ⚠️ Receipt camera, voice recording, and some native modules work best on a **device or simulator**, not only in a limited web preview.
 
 ---
 
-## Architecture notes
+
+
+## 🏗️ Architecture notes
 
 1. **Auth gate** — `(root)/_layout` waits for Clerk, then redirects unsigned users to sign-in and incomplete profiles to onboarding.
 2. **User sync** — `useUserSync` upserts the Clerk user into Supabase and creates a default cash account.
@@ -259,12 +321,16 @@ npm run lint      # ESLint (expo lint)
 
 ---
 
-## License
+
+
+## 📄 License
 
 Private project (`"private": true` in `package.json`). All rights reserved unless the owner states otherwise.
 
 ---
 
-## Author
+
+
+## 👨‍💻 Author
 
 **Abdul Wahab** — [github.com/Abdul-Wahab08](https://github.com/Abdul-Wahab08)
